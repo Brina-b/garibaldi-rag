@@ -5,7 +5,8 @@
   "available_acts": [
     1,
     2,
-    3
+    3,
+    4
   ],
   "documents": [
     {
@@ -352,7 +353,112 @@
           "bytes": 1051952
         }
       ]
+    },
+    {
+      "document_id": "articolo_propaganda_01",
+      "title": "L’isola unanime - articolo celebrativo",
+      "act": 4,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "propaganda",
+      "file_records": [
+        {
+          "path": "data/act_4/articolo_propaganda_01.pdf",
+          "sha256": "012194e8e6c974b05e0658b15e94d95133414ec20fc95caa77269b1d0cce642b",
+          "bytes": 191892
+        }
+      ]
+    },
+    {
+      "document_id": "bozza_comitato_palermo_v1",
+      "title": "Bozza del comitato di Palermo - versione 1",
+      "act": 4,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "obsolete",
+      "file_records": [
+        {
+          "path": "data/act_4/bozza_comitato_palermo_v1.pdf",
+          "sha256": "3e7a32c6957ecb9ee454a027d21819c9f0a40d6f9817e84da39c305e4da2472e",
+          "bytes": 3290
+        }
+      ]
+    },
+    {
+      "document_id": "fonte_dannosa_senza_qualifica_01",
+      "title": "Copia anonima della voce sulla garanzia britannica",
+      "act": 4,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "harmful_if_unqualified",
+      "file_records": [
+        {
+          "path": "data/act_4/fonte_dannosa_senza_qualifica_01.pdf",
+          "sha256": "e14cd986dfa299353f551eaf74356e0ec105ff53e1c671d0a9816a384eaec480",
+          "bytes": 141455
+        }
+      ]
+    },
+    {
+      "document_id": "lettera_allusiva_donnafugata_01",
+      "title": "Lettera allusiva da Donnafugata",
+      "act": 4,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "allusive",
+      "file_records": [
+        {
+          "path": "data/act_4/lettera_allusiva_donnafugata_01.pdf",
+          "sha256": "532e384a1930036f7dcf039c651f8275c6b8fbd921dcdd56a833da1687404565",
+          "bytes": 236275
+        }
+      ]
+    },
+    {
+      "document_id": "nota_comitato_palermo_v2",
+      "title": "Nota del comitato di Palermo - versione aggiornata",
+      "act": 4,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "corrective",
+      "file_records": [
+        {
+          "path": "data/act_4/nota_comitato_palermo_v2.pdf",
+          "sha256": "bfa4215a03d32537ebf442d052d3603cd2b1da6c3674826905392441f307fdd8",
+          "bytes": 507301
+        }
+      ]
+    },
+    {
+      "document_id": "nota_diplomatica_incompleta_01",
+      "title": "Nota diplomatica incompleta",
+      "act": 4,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "incomplete",
+      "file_records": [
+        {
+          "path": "data/act_4/nota_diplomatica_incompleta_01.pdf",
+          "sha256": "2e51ce0e35e76fba13220463793d138f663bb67293345db58411a4f46299b364",
+          "bytes": 115250
+        }
+      ]
+    },
+    {
+      "document_id": "testimonianza_contestata_lanza_01",
+      "title": "Testimonianza retrospettiva del capitano Lanza",
+      "act": 4,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "contested",
+      "file_records": [
+        {
+          "path": "data/act_4/testimonianza_contestata_lanza_01.pdf",
+          "sha256": "98a442a96c193a9d2714a810c92a3dfc9b6449bd943532c0dc1947092b09adc9",
+          "bytes": 54566
+        }
+      ]
     }
   ],
-  "last_release_id": "after_round_1"
+  "last_release_id": "act_4_release"
 }

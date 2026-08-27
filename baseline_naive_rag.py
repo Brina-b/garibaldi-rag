@@ -178,14 +178,15 @@ def choose_primary(document: dict, project_root: Path) -> Path | None:
     return candidates[0]
 
 
-def iter_ingest_files(manifest: dict, project_root: Path) -> list[tuple[Path, str]]:
-    rows: list[tuple[Path, str]] = []
+def iter_ingest_files(manifest: dict, project_root: Path) -> list[tuple[Path, str, str]]:
+    rows: list[tuple[Path, str, str]] = []
     for document in manifest["documents"]:
         primary = choose_primary(document, project_root)
         if primary is None:
             print(f"skip (nessun file): {document['document_id']}")
             continue
-        rows.append((primary, document["document_id"]))
+        reliability = document.get("reliability", "unknown")
+        rows.append((primary, document["document_id"], reliability))
     return rows
 
 
@@ -266,25 +267,32 @@ def ingest_corpus(
         vector_store=vector_store,
         collection_name=collection,
     )
-    for path, document_id in files:
+    for path, document_id, reliability in files:
         ingestion.run(
             file_path=str(path),
-            metadata={"document_id": document_id, "source_file": path.name},
+            metadata={"document_id": document_id, "source_file": path.name, "reliability": reliability},
         )
-        print(f"ingest: {document_id} <- {path.name}")
+        print(f"ingest: {document_id} <- {path.name} [reliability={reliability}]")
     n_chunk = len(list(vector_store.dump_collection(collection)))
     print(f"Ingest completato: {n_chunk} chunk in '{collection}'")
     return vector_store
 
 
 GROUNDING = (
- "Rispondi SOLO usando il contesto fornito. Ogni brano inizia con il suo document_id tra "
- "parentesi quadre, es. [cronologia_ufficiale_01]. Cita SEMPRE la fonte scrivendo ESATTAMENTE "
-"[document_id_reale] incollato nel testo, es. [cronologia_ufficiale_01] — non scrivere mai "
-"la parola 'document_id' come testo, non aggiungere 'Fonte:' o altre parole subito prima "
-"della parentesi quadra. Se il contesto non contiene la risposta, di' esattamente: 'Non lo so'."
+    "Rispondi SOLO usando il contesto fornito. Ogni brano inizia con il suo document_id tra "
+    "parentesi quadre, es. [cronologia_ufficiale_01]. Cita SEMPRE la fonte scrivendo ESATTAMENTE "
+    "[document_id_reale] incollato nel testo, es. [cronologia_ufficiale_01] — non scrivere mai "
+    "la parola 'document_id' come testo, non aggiungere 'Fonte:' o altre parole subito prima "
+    "della parentesi quadra. Copia il document_id ESATTAMENTE come appare tra le parentesi quadre "
+    "del brano di origine, senza abbreviarlo, tagliarlo o modificarlo in alcun modo."
+    "Ogni brano è anche preceduto da un'indicazione tra parentesi tonde con l'affidabilità dichiarata "
+    "della fonte. Se non è neutra (es. 'propaganda', 'obsolete', 'harmful_if_unqualified', 'contested', "
+    "'allusive', 'incomplete'), qualificalo esplicitamente nella risposta invece di presentarlo come "
+    "fatto neutro (es. 'una fonte propagandistica sostiene...', 'una versione poi corretta affermava...'). "
+    "Se una nota è 'corrective' rispetto a una 'obsolete' sullo stesso fatto, preferisci la versione "
+    "corretta nella risposta principale, ma cita comunque quella precedente se la domanda la richiede. "
+    "Se il contesto non contiene la risposta, di' esattamente: 'Non lo so'."
 )
-
 
 def build_naive_dag(embedder, vector_store, llm):
     from datapizza.modules.prompt import ChatPromptTemplate
@@ -293,7 +301,7 @@ def build_naive_dag(embedder, vector_store, llm):
     prompt_template = ChatPromptTemplate(
         user_prompt_template="Domanda: {{ user_prompt }}",
         retrieval_prompt_template=(
-            "{% for chunk in chunks %}[{{ chunk.metadata.document_id }}]\n{{ chunk.text }}\n\n{% endfor %}"
+            "{% for chunk in chunks %}[{{ chunk.metadata.document_id }}] (affidabilità dichiarata: {{ chunk.metadata.reliability }})\n{{ chunk.text }}\n\n{% endfor %}"
         ),
     )
     dag = DagPipeline()
