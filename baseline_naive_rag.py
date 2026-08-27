@@ -285,7 +285,13 @@ GROUNDING = (
     "[document_id_reale] incollato nel testo, es. [cronologia_ufficiale_01] — non scrivere mai "
     "la parola 'document_id' come testo, non aggiungere 'Fonte:' o altre parole subito prima "
     "della parentesi quadra. Copia il document_id ESATTAMENTE come appare tra le parentesi quadre "
-    "del brano di origine, senza abbreviarlo, tagliarlo o modificarlo in alcun modo."
+    "del brano di origine, senza abbreviarlo, tagliarlo o modificarlo in alcun modo. "
+    "Puoi citare ESCLUSIVAMENTE i document_id che compaiono per intero tra parentesi quadre nei "
+    "brani mostrati qui sopra in QUESTO messaggio. Se un brano nomina un'altra fonte solo per "
+    "titolo o descrizione (es. 'nota di rettifica del comitato') senza che quella fonte sia "
+    "mostrata qui con il proprio [document_id], NON dedurre o inventare il suo document_id: cita "
+    "invece il document_id del brano che stai effettivamente leggendo, oppure ometti la citazione "
+    "se non è indispensabile. "
     "Ogni brano è anche preceduto da un'indicazione tra parentesi tonde con l'affidabilità dichiarata "
     "della fonte. Se non è neutra (es. 'propaganda', 'obsolete', 'harmful_if_unqualified', 'contested', "
     "'allusive', 'incomplete'), qualificalo esplicitamente nella risposta invece di presentarlo come "
@@ -294,7 +300,6 @@ GROUNDING = (
     "corretta nella risposta principale, ma cita comunque quella precedente se la domanda la richiede. "
     "Se il contesto non contiene la risposta, di' esattamente: 'Non lo so'."
 )
-
 def build_naive_dag(embedder, vector_store, llm):
     from datapizza.modules.prompt import ChatPromptTemplate
     from datapizza.pipeline import DagPipeline
@@ -343,9 +348,12 @@ def naive_rag(dag, collection: str, domanda: str, k: int = 5, k_retrieve: int | 
     )
 
 
-def hits_to_contexts(hits: list[Any], max_contexts: int = 5) -> list[dict]:
+def hits_to_contexts(hits: list[Any], max_contexts: int = 5, max_per_doc: int = 1) -> list[dict]:
     contexts: list[dict] = []
     seen_by_doc: dict[str, list[str]] = {}
+    doc_count: dict[str, int] = {}
+    leftover: list[tuple[str, str]] = []  # scartati solo per il cap, non duplicati veri
+
     for hit in hits:
         if len(contexts) >= max_contexts:
             break
@@ -355,16 +363,69 @@ def hits_to_contexts(hits: list[Any], max_contexts: int = 5) -> list[dict]:
             continue
         norm = " ".join(content.split()).lower()
         prior_norms = seen_by_doc.get(document_id, [])
-        # scarta se e' un quasi-duplicato di un chunk gia' scelto dello stesso documento:
-        # stesso testo, oppure uno contenuto per intero nell'altro
         is_dup = any(norm == p or norm in p or p in norm for p in prior_norms)
         if is_dup:
             continue
         seen_by_doc.setdefault(document_id, []).append(norm)
-        contexts.append({"rank": len(contexts) + 1, "document_id": document_id, "content": content})
+        if doc_count.get(document_id, 0) >= max_per_doc:
+            leftover.append((document_id, content))
+            continue
+        doc_count[document_id] = doc_count.get(document_id, 0) + 1
+        contexts.append({"rank": 0, "document_id": document_id, "content": content})
+
+    for document_id, content in leftover:
+        if len(contexts) >= max_contexts:
+            break
+        contexts.append({"rank": 0, "document_id": document_id, "content": content})
+
+    for i, ctx in enumerate(contexts, start=1):
+        ctx["rank"] = i
     return contexts
 
-def fix_citation_ids(answer_text: str, contexts: list[dict]) -> str:
+_STOPWORDS = {
+    "il", "lo", "la", "i", "gli", "le", "di", "a", "da", "in", "con", "su", "per", "tra", "fra",
+    "un", "uno", "una", "che", "non", "e", "ma", "si", "al", "del", "della", "dei", "delle",
+    "come", "anche", "se", "questo", "questa", "questi", "queste", "sono", "essere", "stato",
+}
+
+
+def _keywords(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-zàèéìòùç]+", text.lower()) if len(w) > 3 and w not in _STOPWORDS}
+
+
+def fix_citations(answer_text: str, contexts: list[dict]) -> str:
+    """Corregge le citazioni nella risposta:
+    1) ID troncati -> ID reale per suffisso (es. comitato_palermo_v2 -> nota_comitato_palermo_v2)
+    2) ID non presenti nei contexts di questa domanda -> riassegnati al context il cui
+       contenuto condivide piu' parole chiave con la frase citata, se il riscontro e' netto;
+       altrimenti la citazione viene rimossa (meglio nessuna citazione che una falsa)."""
+    real_ids = [c["document_id"] for c in contexts]
+    real_id_set = set(real_ids)
+
+    def _replace(match: re.Match) -> str:
+        candidate = match.group(1)
+        if candidate in real_id_set:
+            return match.group(0)
+
+        suffix_matches = [rid for rid in real_ids if rid.endswith("_" + candidate) or rid.endswith(candidate)]
+        if len(set(suffix_matches)) == 1:
+            return f"[{suffix_matches[0]}]"
+
+        window_start = max(0, match.start() - 300)
+        claim_words = _keywords(answer_text[window_start:match.start()])
+        best_id, best_score = None, 0
+        for c in contexts:
+            overlap = len(claim_words & _keywords(c["content"]))
+            if overlap > best_score:
+                best_score, best_id = overlap, c["document_id"]
+        if best_id and best_score >= 3:
+            return f"[{best_id}]"
+        return ""
+
+    fixed = re.sub(r"\[([a-zA-Z0-9_\-]+)\]", _replace, answer_text)
+    return re.sub(r"[ \t]+([.,;])", r"\1", fixed)
+
+
     """Rete di sicurezza: corregge nel testo della risposta le citazioni
     abbreviate/troncate, sostituendole con il document_id ESATTO presente
     nei contexts. Non dipende dal fatto che l'LLM segua l'istruzione del
@@ -386,6 +447,7 @@ def fix_citation_ids(answer_text: str, contexts: list[dict]) -> str:
 
     return re.sub(r"\[([a-zA-Z0-9_\-]+)\]", _replace, answer_text)
 
+
 def answer_one(
     question: dict,
     *,
@@ -396,6 +458,7 @@ def answer_one(
     model: str,
     k: int,
     k_retrieve: int | None = None,
+    max_per_doc: int = 1,
 ) -> dict:
     question_text = question["question"]
     started = time.perf_counter()
@@ -405,8 +468,8 @@ def answer_one(
     llm_out = result["llm"]
     answer_text = getattr(llm_out, "text", None) or str(llm_out)
     input_tokens, output_tokens, cached = _token_usage(llm_out)
-    contexts = hits_to_contexts(hits, max_contexts=k)
-    answer_text = fix_citation_ids(answer_text, contexts)
+    contexts = hits_to_contexts(hits, max_contexts=k, max_per_doc=max_per_doc)
+    answer_text = fix_citations(answer_text, contexts)
     return {
         "question_id": question["question_id"],
         "question": question_text,
@@ -465,7 +528,8 @@ def main() -> int:
     parser.add_argument("--qdrant-path", type=Path, default=Path(os.getenv("QDRANT_PATH", "outputs/qdrant")))
     parser.add_argument("--collection", default=os.getenv("COLLECTION_NAME", "caso_dei_mille"))
     parser.add_argument("--k", type=int, default=int(os.getenv("MAX_CONTEXTS", "5")))
-    parser.add_argument("--k-retrieve", type=int, default=None, help="Candidati da recuperare prima del dedup (default: max(k+5, 10))")
+    parser.add_argument("--k-retrieve", type=int, default=None, help="Candidati da recuperare prima del dedup (default: max(k*3, 15))")
+    parser.add_argument("--max-per-doc", type=int, default=1, help="Max chunk per documento nei contexts finali (diversifica le fonti)")
     parser.add_argument("--rebuild", action="store_true", help="Ricostruisce l'indice Qdrant")
     parser.add_argument("--validate-only", action="store_true", help="Valida una submission già prodotta")
     parser.add_argument("--submission", type=Path, help="Submission da validare (con --validate-only)")
@@ -506,7 +570,7 @@ def main() -> int:
     )
     dag = build_naive_dag(embedder, vector_store, llm)
 
-    k_retrieve = args.k_retrieve or max(args.k + 5, 10)
+    k_retrieve = args.k_retrieve or max(args.k * 3, 15)
     answers = [
         answer_one(
             row,
@@ -517,6 +581,7 @@ def main() -> int:
             model=model,
             k=args.k,
             k_retrieve=k_retrieve,
+            max_per_doc=args.max_per_doc,
         )
         for row in questions["questions"]
     ]
