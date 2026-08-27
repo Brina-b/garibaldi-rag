@@ -447,6 +447,90 @@ def fix_citations(answer_text: str, contexts: list[dict]) -> str:
 
     return re.sub(r"\[([a-zA-Z0-9_\-]+)\]", _replace, answer_text)
 
+def _bm25_tokenize(text: str) -> list[str]:
+    return re.findall(r"[a-zàèéìòùç0-9]+", text.lower())
+
+
+def build_bm25_index(vector_store, collection: str):
+    """Costruisce un indice BM25 locale (lessicale/keyword) su tutti i chunk
+    gia' presenti in Qdrant, per la parte 'sparse' della hybrid search.
+    Non tocca lo schema di Qdrant: e' un indice separato in memoria.
+    Se rank_bm25 non e' installato, ritorna (None, [], []) e il resto del
+    codice fa automaticamente fallback al solo retrieval denso."""
+    try:
+        from rank_bm25 import BM25Okapi
+    except ImportError:
+        print("ATTENZIONE: rank_bm25 non installato (py -m pip install rank_bm25) — hybrid disattivato, solo dense.")
+        return None, [], []
+
+    texts: list[str] = []
+    metas: list[dict] = []
+    for point in vector_store.dump_collection(collection):
+        text = (getattr(point, "text", None) or "").strip()
+        metadata = getattr(point, "metadata", None)
+        document_id = _meta_get(metadata, "document_id")
+        if not text or not document_id:
+            continue
+        texts.append(text)
+        metas.append({"document_id": document_id})
+
+    if not texts:
+        return None, [], []
+
+    tokenized = [_bm25_tokenize(t) for t in texts]
+    bm25 = BM25Okapi(tokenized)
+    print(f"Indice BM25 costruito su {len(texts)} chunk (hybrid search attivo)")
+    return bm25, texts, metas
+
+
+def bm25_search(bm25, texts: list[str], metas: list[dict], query: str, k: int) -> list[dict]:
+    if bm25 is None:
+        return []
+    scores = bm25.get_scores(_bm25_tokenize(query))
+    ranked_idx = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:k]
+    return [
+        {"document_id": metas[i]["document_id"], "content": texts[i]}
+        for i in ranked_idx if scores[i] > 0
+    ]
+
+
+class _FusedHit:
+    """Adatta un risultato BM25 (dict) alla stessa interfaccia (.text, .metadata)
+    degli hit del retriever denso, cosi' hits_to_contexts funziona su entrambi
+    senza bisogno di modifiche."""
+    __slots__ = ("text", "metadata")
+
+    def __init__(self, text: str, metadata: dict):
+        self.text = text
+        self.metadata = metadata
+
+
+def reciprocal_rank_fusion(dense_hits: list[Any], sparse_hits: list[dict], k_rrf: int = 60) -> list[Any]:
+    """Fonde retrieval denso e BM25 con Reciprocal Rank Fusion: ogni chunk
+    riceve 1/(k_rrf + rank) da ciascun ranker in cui compare, i punteggi si
+    sommano. Cattura sia la similarita' semantica (dense) sia le corrispondenze
+    esatte di nomi/date/numeri che il dense da solo puo' perdere (BM25)."""
+    scores: dict[tuple[str, str], float] = {}
+    payload: dict[tuple[str, str], Any] = {}
+
+    for rank, hit in enumerate(dense_hits, start=1):
+        document_id = _meta_get(getattr(hit, "metadata", None), "document_id")
+        content = (getattr(hit, "text", None) or "").strip()
+        if not document_id or not content:
+            continue
+        key = (document_id, " ".join(content.split()).lower())
+        scores[key] = scores.get(key, 0.0) + 1.0 / (k_rrf + rank)
+        payload.setdefault(key, hit)
+
+    for rank, hit in enumerate(sparse_hits, start=1):
+        document_id = hit["document_id"]
+        content = hit["content"]
+        key = (document_id, " ".join(content.split()).lower())
+        scores[key] = scores.get(key, 0.0) + 1.0 / (k_rrf + rank)
+        payload.setdefault(key, _FusedHit(content, {"document_id": document_id}))
+
+    ordered_keys = sorted(scores, key=lambda item: scores[item], reverse=True)
+    return [payload[key] for key in ordered_keys]
 
 def answer_one(
     question: dict,
@@ -459,16 +543,21 @@ def answer_one(
     k: int,
     k_retrieve: int | None = None,
     max_per_doc: int = 1,
+    bm25=None,
+    bm25_texts: list[str] | None = None,
+    bm25_metas: list[dict] | None = None,
 ) -> dict:
     question_text = question["question"]
     started = time.perf_counter()
     result = naive_rag(dag, collection, question_text, k=k, k_retrieve=k_retrieve)
     latency_ms = max(0, round((time.perf_counter() - started) * 1000))
-    hits = result.get("retriever") or dense_retrieve(embedder, vector_store, collection, question_text, k=k_retrieve or k) 
+    hits = result.get("retriever") or dense_retrieve(embedder, vector_store, collection, question_text, k=k_retrieve or k)
+    sparse_hits = bm25_search(bm25, bm25_texts or [], bm25_metas or [], question_text, k=k_retrieve or k)
+    fused_hits = reciprocal_rank_fusion(hits, sparse_hits) if sparse_hits else hits
     llm_out = result["llm"]
     answer_text = getattr(llm_out, "text", None) or str(llm_out)
     input_tokens, output_tokens, cached = _token_usage(llm_out)
-    contexts = hits_to_contexts(hits, max_contexts=k, max_per_doc=max_per_doc)
+    contexts = hits_to_contexts(fused_hits, max_contexts=k, max_per_doc=max_per_doc)
     answer_text = fix_citations(answer_text, contexts)
     return {
         "question_id": question["question_id"],
@@ -568,7 +657,9 @@ def main() -> int:
         collection=args.collection,
         rebuild=args.rebuild,
     )
+
     dag = build_naive_dag(embedder, vector_store, llm)
+    bm25, bm25_texts, bm25_metas = build_bm25_index(vector_store, args.collection)
 
     k_retrieve = args.k_retrieve or max(args.k * 3, 15)
     answers = [
@@ -582,6 +673,9 @@ def main() -> int:
             k=args.k,
             k_retrieve=k_retrieve,
             max_per_doc=args.max_per_doc,
+            bm25=bm25,
+            bm25_texts=bm25_texts,
+            bm25_metas=bm25_metas,
         )
         for row in questions["questions"]
     ]
