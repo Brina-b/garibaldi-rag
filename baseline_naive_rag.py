@@ -23,6 +23,7 @@ import json
 import os
 import shutil
 import time
+import re
 from pathlib import Path
 from typing import Any, Literal
 
@@ -363,6 +364,28 @@ def hits_to_contexts(hits: list[Any], max_contexts: int = 5) -> list[dict]:
         contexts.append({"rank": len(contexts) + 1, "document_id": document_id, "content": content})
     return contexts
 
+def fix_citation_ids(answer_text: str, contexts: list[dict]) -> str:
+    """Rete di sicurezza: corregge nel testo della risposta le citazioni
+    abbreviate/troncate, sostituendole con il document_id ESATTO presente
+    nei contexts. Non dipende dal fatto che l'LLM segua l'istruzione del
+    prompt di copiare l'ID per intero."""
+    real_ids = [c["document_id"] for c in contexts]
+    real_id_set = set(real_ids)
+
+    def _replace(match: re.Match) -> str:
+        candidate = match.group(1)
+        if candidate in real_id_set:
+            return match.group(0)  # già corretto
+        suffix_matches = [
+            rid for rid in real_ids
+            if rid.endswith("_" + candidate) or rid.endswith(candidate)
+        ]
+        if len(set(suffix_matches)) == 1:
+            return f"[{suffix_matches[0]}]"
+        return match.group(0)  # ambiguo o nessun match: lascia invariato
+
+    return re.sub(r"\[([a-zA-Z0-9_\-]+)\]", _replace, answer_text)
+
 def answer_one(
     question: dict,
     *,
@@ -382,11 +405,13 @@ def answer_one(
     llm_out = result["llm"]
     answer_text = getattr(llm_out, "text", None) or str(llm_out)
     input_tokens, output_tokens, cached = _token_usage(llm_out)
+    contexts = hits_to_contexts(hits, max_contexts=k)
+    answer_text = fix_citation_ids(answer_text, contexts)
     return {
         "question_id": question["question_id"],
         "question": question_text,
         "answer": answer_text,
-        "contexts": hits_to_contexts(hits, max_contexts=k),
+        "contexts": contexts,
         "telemetry": {
             "latency_ms": latency_ms,
             "declared_cost_eur": declared_cost_eur(input_tokens, output_tokens, cached),
