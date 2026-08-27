@@ -1,0 +1,18 @@
+{
+  "round_id": "sample",
+  "question_count": 2,
+  "questions": [
+    {
+      "question_id": "SAMPLE_Q001",
+      "question": "Quale luogo indica la cronologia per lo sbarco?",
+      "type": "factual",
+      "difficulty": "easy"
+    },
+    {
+      "question_id": "SAMPLE_Q002",
+      "question": "Il dossier considera legittimo concludere che le prove non bastano?",
+      "type": "factual",
+      "difficulty": "easy"
+    }
+  ]
+}

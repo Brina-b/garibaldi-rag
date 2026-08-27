@@ -1,0 +1,54 @@
+{
+  "round_id": "sample",
+  "questions": [
+    {
+      "question_id": "SAMPLE_Q001",
+      "question": "Quale luogo indica la cronologia per lo sbarco?",
+      "type": "factual",
+      "difficulty": "easy",
+      "expected_answer": "Marsala.",
+      "relevant_sources": [
+        "cronologia_ufficiale_01"
+      ],
+      "acceptable_sources": [],
+      "distractor_sources": [],
+      "harmful_if_unqualified": [],
+      "forbidden_claims": [],
+      "requires_abstention": false,
+      "required_facts": [
+        [
+          "Marsala"
+        ]
+      ],
+      "uncertainty_required": false,
+      "judge_notes": ""
+    },
+    {
+      "question_id": "SAMPLE_Q002",
+      "question": "Il dossier considera legittimo concludere che le prove non bastano?",
+      "type": "factual",
+      "difficulty": "easy",
+      "expected_answer": "Sì. Il dossier dice che una risposta corretta può riconoscere l’insufficienza delle evidenze.",
+      "relevant_sources": [
+        "dossier_introduttivo_01"
+      ],
+      "acceptable_sources": [],
+      "distractor_sources": [],
+      "harmful_if_unqualified": [],
+      "forbidden_claims": [],
+      "requires_abstention": false,
+      "required_facts": [
+        [
+          "sì",
+          "si"
+        ],
+        [
+          "insufficienza",
+          "non bastano"
+        ]
+      ],
+      "uncertainty_required": false,
+      "judge_notes": ""
+    }
+  ]
+}

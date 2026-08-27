@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "round_id": "round_1",
+  "answers": [
+    {
+      "question_id": "R1_Q01",
+      "question": "Le fonti provano un accordo formale tra notabili e spedizione?",
+      "answer": "Le fonti disponibili non contengono evidenza sufficiente per una conclusione certa; resta un indizio da corroborare.",
+      "contexts": [
+        {
+          "rank": 1,
+          "document_id": "lettera_salina_01",
+          "content": "Estratto testuale effettivamente usato dal generatore, presente nel documento citato."
+        },
+        {
+          "rank": 2,
+          "document_id": "nota_funzionario_borbonico_01",
+          "content": "Secondo pezzo di evidenza passato al modello, nello stesso ordine dei contexts."
+        }
+      ],
+      "telemetry": {
+        "latency_ms": 842,
+        "declared_cost_eur": 0.0012,
+        "model_calls": [
+          {
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "input_tokens": 1200,
+            "output_tokens": 180,
+            "cached_input_tokens": 0
+          }
+        ]
+      }
+    }
+  ]
+}

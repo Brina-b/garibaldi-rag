@@ -1,0 +1,358 @@
+{
+  "schema_version": "1.1",
+  "release_id": "kickoff_standard",
+  "track": "standard",
+  "available_acts": [
+    1,
+    2,
+    3
+  ],
+  "documents": [
+    {
+      "document_id": "cronologia_ufficiale_01",
+      "title": "Cronologia ufficiale degli eventi",
+      "act": 1,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "official_but_simplified",
+      "file_records": [
+        {
+          "path": "data/act_1/cronologia_ufficiale_01.pdf",
+          "sha256": "cce836515dae280fb910dded969405bbf95eeb56ae2a3148ef651219458bdb80",
+          "bytes": 3821
+        }
+      ]
+    },
+    {
+      "document_id": "dossier_introduttivo_01",
+      "title": "Dossier introduttivo: l’archivio delle mezze verità",
+      "act": 1,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "didactic",
+      "file_records": [
+        {
+          "path": "data/act_1/dossier_introduttivo_01.pdf",
+          "sha256": "1678be1b0e4fa5b7c220c2f392058792dcb8c84ef6f8b8eb10b952d689a65ba7",
+          "bytes": 3830
+        }
+      ]
+    },
+    {
+      "document_id": "elenco_personaggi_01",
+      "title": "Elenco dei personaggi dell’archivio",
+      "act": 1,
+      "origin_type": "simulated",
+      "modality": "table",
+      "reliability": "reference",
+      "file_records": [
+        {
+          "path": "data/act_1/elenco_personaggi_01.pdf",
+          "sha256": "9dff43ac90328730f94c5290d97578def21884c8d77b5c839437bd63a19d6331",
+          "bytes": 3978
+        }
+      ]
+    },
+    {
+      "document_id": "garib_d05",
+      "title": "Documento originale scansionato, 3 pagine",
+      "act": 1,
+      "origin_type": "authentic",
+      "modality": "scan",
+      "reliability": "authentic_unreviewed",
+      "file_records": [
+        {
+          "path": "data/act_1/garib_d05.pdf",
+          "sha256": "bc30eecf607aff72b072ce61af68c21dadc55ab5824d2390eab3d339d8598dc8",
+          "bytes": 1264407
+        }
+      ]
+    },
+    {
+      "document_id": "mappa_geografica_semplice_01",
+      "title": "Mappa geografica semplice dei luoghi chiave",
+      "act": 1,
+      "origin_type": "derived",
+      "modality": "map",
+      "reliability": "reference",
+      "file_records": [
+        {
+          "path": "data/act_1/mappa_geografica_semplice_01.png",
+          "sha256": "6b7b1029427fa55e0f796175030babad2d0ad4fcf7853ec4ae34f4f7b0a6104e",
+          "bytes": 1098719
+        }
+      ]
+    },
+    {
+      "document_id": "scheda_luoghi_chiave_01",
+      "title": "Scheda dei luoghi chiave",
+      "act": 1,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "reference",
+      "file_records": [
+        {
+          "path": "data/act_1/scheda_luoghi_chiave_01.pdf",
+          "sha256": "a20d41cd9106c5458191549828302c5405574463204eb1ee07f305ad892361d1",
+          "bytes": 3778
+        }
+      ]
+    },
+    {
+      "document_id": "dispaccio_console_inglese_01",
+      "title": "Dispaccio del console britannico sul traffico di Marsala",
+      "act": 2,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "partial",
+      "file_records": [
+        {
+          "path": "data/act_2/dispaccio_console_inglese_01.pdf",
+          "sha256": "65377774401b190335ab76a7003d6d73d5cdf75b63ccb2c8a9e744e438c4f634",
+          "bytes": 4059
+        }
+      ]
+    },
+    {
+      "document_id": "garib_d07",
+      "title": "Documento originale scansionato, 2 pagine",
+      "act": 2,
+      "origin_type": "authentic",
+      "modality": "scan",
+      "reliability": "authentic_unreviewed",
+      "file_records": [
+        {
+          "path": "data/act_2/garib_d07.pdf",
+          "sha256": "81131583d519a14b246cc0e4acbb87a228fb546a84415f66dc1e5892fa1f95cf",
+          "bytes": 172196
+        }
+      ]
+    },
+    {
+      "document_id": "garib_d09",
+      "title": "Documento originale scansionato, 2 pagine",
+      "act": 2,
+      "origin_type": "authentic",
+      "modality": "scan",
+      "reliability": "authentic_unreviewed",
+      "file_records": [
+        {
+          "path": "data/act_2/garib_d09.pdf",
+          "sha256": "f3e0e6a30bb762c3cf023d4f54987f2b8fb220985a43ae9a686c5285e7108f2c",
+          "bytes": 1586984
+        }
+      ]
+    },
+    {
+      "document_id": "giornale_borbonico_01",
+      "title": "Il Giornale Reale",
+      "act": 2,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "propaganda",
+      "file_records": [
+        {
+          "path": "data/act_2/giornale_borbonico_01.pdf",
+          "sha256": "1af5195d2cc0fc59be91622b3104aefa54eb632356b5a42f33e962b574a5c388",
+          "bytes": 4381
+        }
+      ]
+    },
+    {
+      "document_id": "giornale_liberale_01",
+      "title": "La Voce dell’Isola",
+      "act": 2,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "propaganda",
+      "file_records": [
+        {
+          "path": "data/act_2/giornale_liberale_01.pdf",
+          "sha256": "9a29ff0f162d9ea3e4711225650482504105dd8002dea6d74b849c449f2d2a16",
+          "bytes": 4638
+        }
+      ]
+    },
+    {
+      "document_id": "lettera_salina_01",
+      "title": "Lettera del principe Salina al cugino di Trapani",
+      "act": 2,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "ambiguous",
+      "file_records": [
+        {
+          "path": "data/act_2/lettera_salina_01.pdf",
+          "sha256": "3ed87284d4624a1ef27ee5d667331140371ced16b7654009e8434c92f15dfa7b",
+          "bytes": 3824
+        }
+      ]
+    },
+    {
+      "document_id": "lettera_tancredi_01",
+      "title": "Biglietto di Tancredi alla baronessa Sant’Elia",
+      "act": 2,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "allusive",
+      "file_records": [
+        {
+          "path": "data/act_2/lettera_tancredi_01.pdf",
+          "sha256": "2758f630676fabd7796cf3742079d024eef079d5868c1d6dead1bf9c93c8f015",
+          "bytes": 3296
+        }
+      ]
+    },
+    {
+      "document_id": "nota_funzionario_borbonico_01",
+      "title": "Nota del funzionario borbonico Ruggiero Malaspina",
+      "act": 2,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "partial",
+      "file_records": [
+        {
+          "path": "data/act_2/nota_funzionario_borbonico_01.pdf",
+          "sha256": "9e8fb74898221042cb8670d113de0d4a05aadf0d81740d4f8d7cc3a0cd604cf4",
+          "bytes": 3789
+        }
+      ]
+    },
+    {
+      "document_id": "agenda_incontri_01",
+      "title": "Agenda di incontri riservati",
+      "act": 3,
+      "origin_type": "simulated",
+      "modality": "table",
+      "reliability": "ambiguous",
+      "file_records": [
+        {
+          "path": "data/act_3/agenda_incontri_01.pdf",
+          "sha256": "6594ebfe62c6b2a69accc6a18a5b93415cec209d54d7777fbbf9119804c68790",
+          "bytes": 3487
+        }
+      ]
+    },
+    {
+      "document_id": "lettera_danneggiata_01",
+      "title": "Lettera danneggiata sul porto",
+      "act": 3,
+      "origin_type": "simulated",
+      "modality": "scan",
+      "reliability": "incomplete",
+      "file_records": [
+        {
+          "path": "data/act_3/lettera_danneggiata_01.png",
+          "sha256": "848825b1324678ae3a6e83ebe984ee2fc5812884dfb07222f544257441447142",
+          "bytes": 1074925
+        }
+      ]
+    },
+    {
+      "document_id": "lettera_porti_feudi_01",
+      "title": "Lettera sui porti e sui feudi occidentali",
+      "act": 3,
+      "origin_type": "simulated",
+      "modality": "text",
+      "reliability": "allusive",
+      "file_records": [
+        {
+          "path": "data/act_3/lettera_porti_feudi_01.pdf",
+          "sha256": "8ded0a6839970a5393ffd8fffb6269f1397fd6f73487451a8a711a2b0f0f5cc1",
+          "bytes": 3240
+        }
+      ]
+    },
+    {
+      "document_id": "manifesto_politico_01",
+      "title": "Manifesto politico “Siciliani!”",
+      "act": 3,
+      "origin_type": "simulated",
+      "modality": "image",
+      "reliability": "propaganda",
+      "file_records": [
+        {
+          "path": "data/act_3/manifesto_politico_01.png",
+          "sha256": "5346c6b8565f15e521d3fb102c88787e689882df95e43d0b665f29737fb0407d",
+          "bytes": 64858
+        }
+      ]
+    },
+    {
+      "document_id": "mappa_base_sicilia_wikimedia_01",
+      "title": "Sicily location map",
+      "act": 3,
+      "origin_type": "authentic",
+      "modality": "map",
+      "reliability": "reference",
+      "file_records": [
+        {
+          "path": "data/act_3/Sicily_location_map_960px.png",
+          "sha256": "11bfc2075d7ae559775bc9ffec1a475090156c5a3376b6d2f30065d316518659",
+          "bytes": 100053
+        }
+      ]
+    },
+    {
+      "document_id": "mappa_porti_occidentali_annotata_01",
+      "title": "Carta annotata dei porti occidentali",
+      "act": 3,
+      "origin_type": "derived",
+      "modality": "map",
+      "reliability": "ambiguous",
+      "file_records": [
+        {
+          "path": "data/act_3/mappa_porti_occidentali_annotata_01.png",
+          "sha256": "096a0d95a167302ad29339bbf6aecec578cd79bdc8948711d4c19d4a2c243afd",
+          "bytes": 104296
+        }
+      ]
+    },
+    {
+      "document_id": "movimenti_diplomatici_01",
+      "title": "Movimenti diplomatici e consolari",
+      "act": 3,
+      "origin_type": "simulated",
+      "modality": "table",
+      "reliability": "partial",
+      "file_records": [
+        {
+          "path": "data/act_3/movimenti_diplomatici_01.pdf",
+          "sha256": "d2f1109e6151b2451e6392295e840747dfff628922d01ca0a1ea44984aa4eba6",
+          "bytes": 3428
+        }
+      ]
+    },
+    {
+      "document_id": "registro_passaggio_01",
+      "title": "Registro dei lasciapassare e dei carri",
+      "act": 3,
+      "origin_type": "simulated",
+      "modality": "table",
+      "reliability": "partial",
+      "file_records": [
+        {
+          "path": "data/act_3/registro_passaggio_01.pdf",
+          "sha256": "05c556f026a16288430496c73db78881de86fb2875a3728e7cb21768cffc0d8a",
+          "bytes": 3398
+        }
+      ]
+    },
+    {
+      "document_id": "scansione_manoscritta_01",
+      "title": "Promemoria manoscritto sui dodici carri",
+      "act": 3,
+      "origin_type": "simulated",
+      "modality": "scan",
+      "reliability": "ambiguous",
+      "file_records": [
+        {
+          "path": "data/act_3/scansione_manoscritta_01.png",
+          "sha256": "e522b92d9c26bb5b24af3f7e897ba50705f3ebb9f0ae51a75d45d9c1a74f5778",
+          "bytes": 1051952
+        }
+      ]
+    }
+  ],
+  "last_release_id": "after_round_1"
+}
